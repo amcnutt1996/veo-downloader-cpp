@@ -36,7 +36,10 @@ main_window::main_window(QWidget *parent)
     connect(ui->selectDirBtn, &QPushButton::clicked, this, &main_window::selectFilePath);
     connect(ui->downloadBtn, &QPushButton::clicked, this, &main_window::startDownload);
     connect(ui->stopDownloadBtn, &QPushButton::clicked, this, &main_window::halt_download);
-
+    connect(ui->userInputURL, &QLineEdit::returnPressed, this, &main_window::startDownload);
+    m_escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    m_escShortcut->setEnabled(false);
+    connect(m_escShortcut, &QShortcut::activated, this, &main_window::halt_download);
     // this connects the video downloader to the main window's download completed function so that it can modify
     // UI elements when the download completes.
     connect(m_video_downloader, &video_downloader::downloadCompleted, this, &main_window::downloadCompleted);
@@ -112,6 +115,7 @@ void main_window::setDownloadingState(bool isDownloading) const {
 
     //make sure the stop button is still enabled when it's downloading.
     ui->stopDownloadBtn->setEnabled(isDownloading);
+    m_escShortcut->setEnabled(true);
 }
 
 main_window::~main_window() {

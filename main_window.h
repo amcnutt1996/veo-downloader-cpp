@@ -6,6 +6,7 @@
 #define VIDEODOWNLOADERGUI_MAIN_WINDOW_H
 
 #include <QDir>
+#include <QShortcut>
 #include <QMainWindow>
 #include "video_downloader.h"
 #include "web_scraper.h"
@@ -38,6 +39,7 @@ private:
     QDir defaultSavePath;
     video_downloader *m_video_downloader = nullptr;
     web_scraper *m_web_scraper = nullptr;
+    QShortcut *m_escShortcut = nullptr; // <--- The new hotkey object
     void setDownloadingState(bool isDownloading) const;
 };
 
