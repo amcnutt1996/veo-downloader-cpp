@@ -4,24 +4,30 @@
 
 #ifndef VIDEODOWNLOADERGUI_VIDEO_DOWNLOADER_H
 #define VIDEODOWNLOADERGUI_VIDEO_DOWNLOADER_H
-#include <qnetworkreply.h>
-#include <Qdir>
+
+#include <QNetworkAccessManager>
+#include <QFile>
+#include <qprogressbar.h>
 
 
-
-class video_downloader {
-    static void onNetworkReply(QNetworkReply *reply);
-    void networkRequest() const;
-
+class video_downloader : public QObject{
+    Q_OBJECT
+public:
+    void downloadVideoFile(const std::string &video_url, const QDir &filePath, QProgressBar *progressBar);
+    void stopDownload() const;
+    QNetworkReply *reply = nullptr;
+    QFile *newFile = nullptr;
 private:
-    QNetworkAccessManager *networkManager;
+    QNetworkAccessManager *connectToUrl = nullptr;
+    QProgressBar *m_progressBar = nullptr;
 
-private slots:
-    void onDownloadStarted();
-    void onDownloadCancelled();
-    void onSetDownloadDirectory();
-    void onDownloadReadyRead();
+signals:
+    void downloadCompleted();
 
+public slots:
+    void onDownloadProgress(qint64 bytesRead, qint64 totalBytes) const;
+    void onReadyRead();
+    void onDownloadFinished();
 };
 
 

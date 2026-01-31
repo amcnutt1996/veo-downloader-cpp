@@ -4,9 +4,10 @@
 #include "web_scraper.h"
 
 int main(int argc, char *argv[]) {
+
     const QApplication vidDownloader(argc, argv);
 
-    main_window primary_win(nullptr);
+    main_window primary_win;
     primary_win.show();
 
     // test call of the video link grabber from VEO website.

@@ -5,7 +5,10 @@
 #ifndef VIDEODOWNLOADERGUI_MAIN_WINDOW_H
 #define VIDEODOWNLOADERGUI_MAIN_WINDOW_H
 
-#include <QWidget>
+#include <QDir>
+#include <QMainWindow>
+#include "video_downloader.h"
+#include "web_scraper.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -16,18 +19,23 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-class main_window : public QWidget {
+class main_window : public QMainWindow {
     Q_OBJECT
 
 public:
     explicit main_window(QWidget *parent = nullptr);
-
-    static void resetProgressBar();
-
     ~main_window() override;
+
+public slots:
+    void selectFilePath();
+    void startDownload() const;
+    void downloadCompleted() const;
 
 private:
     Ui::main_window *ui;
+    QDir defaultSavePath;
+    video_downloader *m_video_downloader = nullptr;
+    web_scraper *m_web_scraper = nullptr;
 };
 
 
