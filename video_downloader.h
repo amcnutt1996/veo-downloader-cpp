@@ -14,7 +14,7 @@ class video_downloader : public QObject{
     Q_OBJECT
 public:
     void downloadVideoFile(const std::string &video_url, const QDir &filePath, QProgressBar *progressBar);
-    void stopDownload() const;
+    void stopDownload();
     QNetworkReply *reply = nullptr;
     QFile *newFile = nullptr;
 private:

@@ -31,11 +31,14 @@ public slots:
     void startDownload() const;
     void downloadCompleted() const;
 
+    void halt_download() const;
+
 private:
     Ui::main_window *ui;
     QDir defaultSavePath;
     video_downloader *m_video_downloader = nullptr;
     web_scraper *m_web_scraper = nullptr;
+    void setDownloadingState(bool isDownloading) const;
 };
 
 

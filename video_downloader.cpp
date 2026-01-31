@@ -3,43 +3,45 @@
 //
 
 #include "video_downloader.h"
-#include "main_window.h"
 #include <iostream>
 #include <QFileDialog>
 #include <QNetworkReply>
 #include <QProgressBar>
 #include <string>
 #include <QTimer>
-#include <sys/socket.h>
-
-#include "ui_main_window.h"
 
 
 void video_downloader::downloadVideoFile(const std::string &video_url, const QDir &filePath, QProgressBar *progressBar) {
     //create file to save to and get the string version of the filepath set by user.
-    QString fullSavePath = filePath.filePath("Video.mp4");
+    const QString fullSavePath = filePath.filePath("video.part");
     qDebug() << "saving to: " << fullSavePath;
 
+    //create the new file
     newFile = new QFile(fullSavePath);
 
+    //make sure the new file is valid and writable so we can download to it.
     if (!newFile->open(QIODevice::WriteOnly)) {
         qDebug() << "Could not open file for writing...";
         delete newFile;
         newFile = nullptr;
         return;
     }
+
+    // creating a pointer to the progressbar that gets passed so we can update it when file is downloading.
     m_progressBar = progressBar;
     //create new object for connection requests
     connectToUrl = new QNetworkAccessManager(this);
 
     //QNetworkAccessManager connectToURL(new QNetworkAccessManager);
     //convert the string URL into a QUrl for connection.
-    const QUrl new_url((video_url.c_str()));
+    const QUrl new_url(QString::fromStdString(video_url)); // Safer conversion
     //Connect to the specified URL
     const QNetworkRequest connectionRequest(new_url);
 
+    //creates the reply based on the connection's requested URL.
     reply = connectToUrl->get(connectionRequest);
 
+    // connects the functions to the network reply states depending on what is's doing.
     connect(reply, &QNetworkReply::readyRead, this,&video_downloader::onReadyRead);
     connect(reply, &QNetworkReply::downloadProgress, this, &video_downloader::onDownloadProgress);
     connect(reply, &QNetworkReply::finished, this, &video_downloader::onDownloadFinished);
@@ -47,22 +49,26 @@ void video_downloader::downloadVideoFile(const std::string &video_url, const QDi
 }
 
 
-void video_downloader::stopDownload() const {
+void video_downloader::stopDownload() {
     if (reply) {
+        (void)reply->disconnect();
+        
         reply->abort();
         reply->close();
         reply->deleteLater();
+        reply = nullptr;
     }
     if (newFile) {
         newFile->remove();
         delete newFile;
+        newFile = nullptr;
     }
     qDebug() << "User Cancelled Download";
 }
 
-void video_downloader::onDownloadProgress(qint64 bytesRead, qint64 totalBytes) const {
+void video_downloader::onDownloadProgress(const qint64 bytesRead, const qint64 totalBytes) const {
     if (totalBytes > 0) {
-        const int percent = (bytesRead * 100) / totalBytes;
+        const int percent = static_cast<int>((bytesRead * 100) / totalBytes);
         m_progressBar->setValue(percent);
     }
 }
@@ -83,9 +89,22 @@ void video_downloader::onReadyRead() {
 }
 
 void video_downloader::onDownloadFinished() {
+
     if (newFile) {
         qDebug() << "file saved to :" << newFile->filesystemFileName();
         newFile->close();
+
+        //renames the file from .part to .mp4 so the user can open it once its finished downloading.
+        QString currentPath = newFile->fileName();
+        QString newPath = currentPath;
+        newPath.replace(".part", ".mp4");
+
+        if (newFile->rename(newPath)) {
+            qDebug() << "file successfully renamed";
+        } else {
+            qDebug() << "Rename failed:" << newFile->errorString();
+        }
+
         newFile->deleteLater();
         newFile = nullptr;
     }
