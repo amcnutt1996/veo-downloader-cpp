@@ -9,11 +9,15 @@
 #include <QProgressBar>
 #include <string>
 #include <QTimer>
+#include "main_window.h"
 
 
 void video_downloader::downloadVideoFile(const std::string &video_url, const QDir &filePath, QProgressBar *progressBar) {
+    // get the new filename to use later when naming the file.
+    const QString new_file_name = fileNameFromUrl(main_window::user_url);
+    qDebug() << "New Filename: " << new_file_name;
     //create file to save to and get the string version of the filepath set by user.
-    const QString fullSavePath = filePath.filePath("video.part");
+    const QString fullSavePath = filePath.filePath( new_file_name + ".part");
     qDebug() << "saving to: " << fullSavePath;
 
     //create the new file
@@ -33,7 +37,6 @@ void video_downloader::downloadVideoFile(const std::string &video_url, const QDi
     //create new object for connection requests
     connectToUrl = new QNetworkAccessManager(this);
 
-    //QNetworkAccessManager connectToURL(new QNetworkAccessManager);
     //convert the string URL into a QUrl for connection.
     const QUrl new_url(QString::fromStdString(video_url)); // Safer conversion
     //Connect to the specified URL
@@ -71,7 +74,6 @@ void video_downloader::stopDownload() {
 void video_downloader::onDownloadProgress(const qint64 bytesRead, const qint64 totalBytes) const {
     if (totalBytes > 0) {
         const int percent = static_cast<int>((bytesRead * 100) / totalBytes);
-        qDebug() << "Downloading:: %" << percent;
         m_progressBar->setValue(percent);
     }
 }
@@ -79,19 +81,17 @@ void video_downloader::onDownloadProgress(const qint64 bytesRead, const qint64 t
 void video_downloader::onReadyRead() {
     if (reply && newFile) {
         const QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-        qDebug() << "Status Code = " << statusCode;
         if (statusCode.isValid() && statusCode.toInt() != 200) {
             qDebug() << "Invalid Status Code: status code = " << statusCode;
             newFile->close();
             newFile->remove();
             delete newFile;
             newFile = nullptr;
-            qDebug() << "Deleted new file";
-            QTimer::singleShot(0, reply, &QNetworkReply::abort);
+            qDebug() << "Deleted new file because the download errored out";
+            QTimer::singleShot(0, reply, &QNetworkReply::abort); //adds the ability to add the next download to the queue one after another.
             return;
         }
         newFile->write(reply->readAll());
-        qDebug() << "Writing data to file...";
     }
 }
 
@@ -129,7 +129,12 @@ void video_downloader::onDownloadFinished() {
     qDebug() << "Download Finished. Cleaning complete.";
 }
 
-// std::string fileNamer(std::string &original_url){
-//
-//     return ;
-// }
+//std::string video_url = web_scraper::get_video_url("https://app.veo.co/matches/20260122-training-jan-22-2026-f0194918/");
+
+QString video_downloader::fileNameFromUrl(const std::string &original_url){
+    const auto start_index = original_url.find("matches/");
+    std::string new_filename = original_url.substr(start_index + 8, -1);
+    new_filename.pop_back();
+    QString qstr_file_name = new_filename.c_str();
+    return qstr_file_name;
+}

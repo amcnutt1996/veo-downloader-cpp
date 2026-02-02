@@ -6,10 +6,11 @@
 #define VIDEODOWNLOADERGUI_VIDEO_DOWNLOADER_H
 
 #include <QNetworkAccessManager>
-#include <QFile>
 #include <qprogressbar.h>
+#include <QObject>
 #include <QDir>
-
+#include <QFile>
+#include <QNetworkReply>
 
 class video_downloader : public QObject{
     Q_OBJECT
@@ -29,6 +30,8 @@ public slots:
     void onDownloadProgress(qint64 bytesRead, qint64 totalBytes) const;
     void onReadyRead();
     void onDownloadFinished();
+
+    static QString fileNameFromUrl(const std::string &original_url);
 };
 
 

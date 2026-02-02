@@ -26,6 +26,7 @@ class main_window : public QMainWindow {
 public:
     explicit main_window(QWidget *parent = nullptr);
     ~main_window() override;
+    static std::string user_url;
 
 public slots:
     void selectFilePath();

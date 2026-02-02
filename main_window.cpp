@@ -19,9 +19,9 @@
 
 // #include "cmake-build-release-intel/videoDownloaderGUI_autogen/include/ui_main_window.h"
 
-// TODO: link validation for non-veo links input into the url line.
-// TODO: naming feature for finalized file post download.
 // TODO: Implement log feature for what the app is doing in background (clear out on close)
+
+std::string main_window::user_url;
 
 main_window::main_window(QWidget *parent)
     // initialize the main window and set up the main UI elements.
@@ -51,7 +51,6 @@ main_window::main_window(QWidget *parent)
     // UI elements when the download completes.
     connect(m_video_downloader, &video_downloader::downloadCompleted, this, &main_window::downloadCompleted);
 
-
 }
 
 void main_window::downloadCompleted() const {
@@ -68,16 +67,17 @@ void main_window::halt_download() const {
     m_video_downloader->stopDownload();
     ui->downloadProgress->setValue(0);
     ui->statusBar->showMessage("User Cancelled Download...");
+    ui->userInputURL->clear();
+    ui->userInputURL->setFocus();
 }
-
 
 void main_window::startDownload() const {
     // socket: allows the buttonpress to start the download.
     // gathers required information to be input into the function from the Qt main window to pass to the external functions.
-
-        if (linkValidation(ui->userInputURL->text()) == true) {
+    if (linkValidation(ui->userInputURL->text()) == true) {
 
         const std::string stringURL = ui->userInputURL->text().toStdString();
+        user_url = stringURL;
         // takes original string and finds the source video URL.
         const std::string scraped_string = web_scraper::get_video_url(stringURL);
 
@@ -97,6 +97,7 @@ void main_window::startDownload() const {
         infoBox.setText("Please use a valid app.veo.co link from the VEO video site.");
         infoBox.exec();
         ui->userInputURL->clear();
+        user_url = "";
     }
 
 }
