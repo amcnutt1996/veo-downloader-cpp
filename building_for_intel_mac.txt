@@ -61,13 +61,13 @@ hdiutil create -volname "VeoDownloader" \
 -- Verify DMG Content --
 / want to make sure it's actually the correct application, and that its an intel build
 / first mount
-hdiutil attach ~/Desktop/VideoDownloader_Intel.dmg
+hdiutil attach ~/Desktop/VeoDownloader_Intel.dmg
 
 /check internal architecture
-objdump -a /Volumes/VideoDownloader/videoDownloaderGUI.app/Contents/MacOS/videoDownloaderGUI | head -n 5
+objdump -a /Volumes/VeoDownloader/videoDownloaderGUI.app/Contents/MacOS/videoDownloaderGUI | head -n 5
 
 /Eject after verified
-hdiutil detach /Volumes/VideoDownloader
+hdiutil detach /Volumes/VeoDownloader
 
 
 
