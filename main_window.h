@@ -31,7 +31,6 @@ public slots:
     void selectFilePath();
     void startDownload() const;
     void downloadCompleted() const;
-
     void halt_download() const;
 
 private:
@@ -39,8 +38,10 @@ private:
     QDir defaultSavePath;
     video_downloader *m_video_downloader = nullptr;
     web_scraper *m_web_scraper = nullptr;
-    QShortcut *m_escShortcut = nullptr; // <--- The new hotkey object
+    QShortcut *m_escShortcut = nullptr; // Hotkey Object
     void setDownloadingState(bool isDownloading) const;
+
+    static bool linkValidation(const QString &initialURL);
 };
 
 

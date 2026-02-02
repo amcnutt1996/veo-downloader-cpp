@@ -8,10 +8,12 @@
       "features": [
         "gui",
         "widgets",
-        "network"
+        "network",
+        "openssl"
       ]
     },
     "curl",
-    "libxml2"
+    "libxml2",
+    "openssl"
   ]
 }

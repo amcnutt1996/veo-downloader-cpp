@@ -15,6 +15,13 @@
 #include <QString>
 #include <QStatusBar>
 #include <QStandardPaths>
+#include <QMessageBox>
+
+// #include "cmake-build-release-intel/videoDownloaderGUI_autogen/include/ui_main_window.h"
+
+// TODO: link validation for non-veo links input into the url line.
+// TODO: naming feature for finalized file post download.
+// TODO: Implement log feature for what the app is doing in background (clear out on close)
 
 main_window::main_window(QWidget *parent)
     // initialize the main window and set up the main UI elements.
@@ -67,19 +74,30 @@ void main_window::halt_download() const {
 void main_window::startDownload() const {
     // socket: allows the buttonpress to start the download.
     // gathers required information to be input into the function from the Qt main window to pass to the external functions.
-    const std::string stringURL = ui->userInputURL->text().toStdString();
 
-    // takes original string and finds the source video URL.
-    const std::string scraped_string = web_scraper::get_video_url(stringURL);
+        if (linkValidation(ui->userInputURL->text()) == true) {
 
-    // locks UI so user cant fuck with it while downloading.
-    setDownloadingState(true);
+        const std::string stringURL = ui->userInputURL->text().toStdString();
+        // takes original string and finds the source video URL.
+        const std::string scraped_string = web_scraper::get_video_url(stringURL);
 
-    // passes the new data into the function within video downloader
-    m_video_downloader->downloadVideoFile(scraped_string, defaultSavePath, ui->downloadProgress);
+        // locks UI so user cant fuck with it while downloading.
+        setDownloadingState(true);
 
-    ui->statusBar->showMessage("Downloading...");
-    qDebug() << "Starting download...";
+        // passes the new data into the function within video downloader
+        m_video_downloader->downloadVideoFile(scraped_string, defaultSavePath, ui->downloadProgress);
+
+        ui->statusBar->showMessage("Downloading...");
+        qDebug() << "Starting download...";
+
+    } else {
+        QMessageBox infoBox;
+        infoBox.setIcon(QMessageBox::Information);
+        infoBox.setWindowTitle("Veo Downloader");
+        infoBox.setText("Please use a valid app.veo.co link from the VEO video site.");
+        infoBox.exec();
+        ui->userInputURL->clear();
+    }
 
 }
 
@@ -104,7 +122,7 @@ void main_window::selectFilePath() {
     }
 }
 
-void main_window::setDownloadingState(bool isDownloading) const {
+void main_window::setDownloadingState(const bool isDownloading) const {
     // helper to set the state of if the user is downloading or not.
     // If we are not downloading something we can enable all inputs.
     bool inputsEnabled = !isDownloading; // <- opposite of isDownloading
@@ -117,6 +135,16 @@ void main_window::setDownloadingState(bool isDownloading) const {
     ui->stopDownloadBtn->setEnabled(isDownloading);
     m_escShortcut->setEnabled(true);
 }
+
+
+bool main_window::linkValidation(const QString &initialURL) {
+    if (initialURL.contains("app.veo.co")) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 
 main_window::~main_window() {
     delete ui;

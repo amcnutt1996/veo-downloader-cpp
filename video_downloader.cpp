@@ -26,6 +26,7 @@ void video_downloader::downloadVideoFile(const std::string &video_url, const QDi
         newFile = nullptr;
         return;
     }
+    qDebug() << "opened file: " << newFile->fileName();
 
     // creating a pointer to the progressbar that gets passed so we can update it when file is downloading.
     m_progressBar = progressBar;
@@ -40,6 +41,7 @@ void video_downloader::downloadVideoFile(const std::string &video_url, const QDi
 
     //creates the reply based on the connection's requested URL.
     reply = connectToUrl->get(connectionRequest);
+    qDebug() << "Connected to " << connectionRequest.url();
 
     // connects the functions to the network reply states depending on what is's doing.
     connect(reply, &QNetworkReply::readyRead, this,&video_downloader::onReadyRead);
@@ -69,33 +71,44 @@ void video_downloader::stopDownload() {
 void video_downloader::onDownloadProgress(const qint64 bytesRead, const qint64 totalBytes) const {
     if (totalBytes > 0) {
         const int percent = static_cast<int>((bytesRead * 100) / totalBytes);
+        qDebug() << "Downloading:: %" << percent;
         m_progressBar->setValue(percent);
     }
 }
 
 void video_downloader::onReadyRead() {
     if (reply && newFile) {
-        QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+        const QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+        qDebug() << "Status Code = " << statusCode;
         if (statusCode.isValid() && statusCode.toInt() != 200) {
+            qDebug() << "Invalid Status Code: status code = " << statusCode;
             newFile->close();
             newFile->remove();
             delete newFile;
             newFile = nullptr;
+            qDebug() << "Deleted new file";
             QTimer::singleShot(0, reply, &QNetworkReply::abort);
             return;
         }
         newFile->write(reply->readAll());
+        qDebug() << "Writing data to file...";
     }
 }
 
 void video_downloader::onDownloadFinished() {
+    if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << "Download failed with error: " << reply->errorString();
+    } else {
+        qDebug() << "Download completed successfully.";
+    }
+
 
     if (newFile) {
-        qDebug() << "file saved to :" << newFile->filesystemFileName();
+        qDebug() << "file saved to :" << newFile ->filesystemFileName();
         newFile->close();
 
         //renames the file from .part to .mp4 so the user can open it once its finished downloading.
-        QString currentPath = newFile->fileName();
+        const QString currentPath = newFile->fileName();
         QString newPath = currentPath;
         newPath.replace(".part", ".mp4");
 

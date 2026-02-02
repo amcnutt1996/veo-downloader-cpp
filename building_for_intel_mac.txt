@@ -1,0 +1,77 @@
+Cross-Compiling for static Intel (x86_64) on Apple Silicon
+Forcing ARM Mac to build genuine Intel binaries using vcpkg + cLion
+
+-vcpkg triplets often fail to enforce architecture on MacOS. Defaults to ARM. You must create a custom triplet that forces the computer flags.
+
+
+Location: ~vcpkg/triplets/community/x64-osx-static.cmake
+-- Content Required in cmake file: --
+
+set(VCPKG_TARGET_ARCHITECTURE x64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+set(VCPKG_CMAKE_SYSTEM_NAME Darwin)
+
+set(VCPKG_OSX_ARCHITECTURES x86_64)
+set(VCPKG_C_FLAGS "-arch x86_64")
+set(VCPKG_CXX_FLAGS "-arch x86_64")
+set(VCPKG_LINKER_FLAGS "-arch x86_64")
+
+
+-- Cmake Options In CLion --
+Settings > Build, Execution, Deployment, CMake > Profile (Release-Intel)
+- CMake Options -
+-DCMAKE_TOOLCHAIN_FILE=~/Documents/Dev/vcpkg/scripts/buildsystems/vcpkg.cmake
+-DVCPKG_TARGET_TRIPLET=x64-osx-static
+-DVCPKG_OVERLAY_TRIPLETS=~/Documents/Dev/vcpkg/triplets/community
+-DCMAKE_OSX_ARCHITECTURES=x86_64
+
+
+-- Rebuild Process --
+/ delete the project build folder
+rm -rf ~/videoDownloaderGUI/cmake-build-release-intel
+
+/ delete the specific vcpkg cache to compile fresh
+rm -rf ~/Documents/Dev/vcpkg/buildtrees/qtbase
+rm -rf ~/Documents/Dev/vcpkg/packages/qtbase_x64-osx-static
+rm -rf ~/Documents/Dev/vcpkg/installed/x64-osx-static
+
+- In CLion -
+Tools > CMake > Reset Cache and Reload Project
+(should take a long time to recompile and not output errors)
+
+
+-- Verification before building --
+/ make sure the files are Intel-based. The response should be "file format mach-o 64-bit x86-64"
+objdump -a ~/Documents/videoDownloaderGUI/cmake-build-release-intel/vcpkg_installed/x64-osx-static/lib/libQt6Core.a | head -n 5
+
+
+
+-- Packaging (Creating DMG) --
+/ since its a static build we can use hdiutil(mac default app) to package the app.
+- Sign the application -
+codesign --force --deep --sign - ~/Documents/videoDownloaderGUI/cmake-build-release-intel/videoDownloaderGUI.app
+
+- Create DMG -
+hdiutil create -volname "VeoDownloader" \
+  -srcfolder ~/Documents/VideoDownloaderGUI/cmake-build-release-intel/videoDownloaderGUI.app \
+  -ov -format UDZO \
+  ~/Desktop/VeoDownloader_Intel.dmg
+
+-- Verify DMG Content --
+/ want to make sure it's actually the correct application, and that its an intel build
+/ first mount
+hdiutil attach ~/Desktop/VideoDownloader_Intel.dmg
+
+/check internal architecture
+objdump -a /Volumes/VideoDownloader/videoDownloaderGUI.app/Contents/MacOS/videoDownloaderGUI | head -n 5
+
+/Eject after verified
+hdiutil detach /Volumes/VideoDownloader
+
+
+
+SUMMARY:
+Added VCPKG_OSX_ARCHITECTURES; a hard enforcement to make compiler error out if it builds ARM code.
+Reset the cache to reload CMake to read the new architecture rules.
+Used Objdump to verify the type of file and make sure it's Intel-based.

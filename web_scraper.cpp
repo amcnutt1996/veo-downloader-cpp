@@ -3,8 +3,6 @@
 //
 #include <iostream>
 #include "web_scraper.h"
-#include "libxml/HTMLparser.h"
-#include <libxml/xpath.h>
 #include <curl/curl.h>
 #include <string>
 
@@ -91,7 +89,7 @@ std::string web_scraper::get_video_url(const std::string &input_url) {
 
     //then from the api page, you parse it and get the source of the video
     const std::string secondary_fetch = get_website(first_url);
-    std::cout << "Fetching Second URL: " << first_url << "Finding Video Source" << std::endl;
+    std::cout << "Fetching Second URL: " << first_url << ". Finding Video Source" << std::endl;
 
     //then once you parse that api page and get the source of the video you can use it.
     const std::string video_url = extract_secondary(secondary_fetch);
