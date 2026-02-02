@@ -8,6 +8,7 @@
 #include <QNetworkAccessManager>
 #include <QFile>
 #include <qprogressbar.h>
+#include <QDir>
 
 
 class video_downloader : public QObject{

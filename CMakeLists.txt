@@ -15,13 +15,11 @@ find_package(Qt6 COMPONENTS
         Network
         REQUIRED)
 
-# Define variables for your resource files
 set(APP_ICON "${CMAKE_SOURCE_DIR}/veodownloader.icns")
 
-# Tell CMake that the icon file should be copied to the 'Resources' folder inside the bundle
-set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION TRUE)
 
-add_executable(videoDownloaderGUI MACOSX_BUNDLE
+add_executable(videoDownloaderGUI
         main.cpp
         main_window.cpp
         main_window.h
@@ -30,14 +28,14 @@ add_executable(videoDownloaderGUI MACOSX_BUNDLE
         web_scraper.h
         video_downloader.cpp
         video_downloader.h
-        ${APP_ICON}       # Add icon to source list
+        veodownloader.icns
+        ${APP_ICON}
 )
 
 # Configure the Bundle properties
 set_target_properties(videoDownloaderGUI PROPERTIES
-    # This tells macOS which file in Resources is the icon
+    MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_ICON_FILE "veodownloader.icns"
-    # These properties fill in the auto-generated Info.plist
     MACOSX_BUNDLE_GUI_IDENTIFIER "com.gregorymcnutt.videodownloader"
     MACOSX_BUNDLE_BUNDLE_NAME "VEO Downloader"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
@@ -45,10 +43,10 @@ set_target_properties(videoDownloaderGUI PROPERTIES
 )
 
 target_link_libraries(videoDownloaderGUI
-        Qt::Core
-        Qt::Gui
-        Qt::Widgets
-        Qt::Network
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::Network
         CURL::libcurl
         LibXml2::LibXml2
 )
