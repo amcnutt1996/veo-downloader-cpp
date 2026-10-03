@@ -3,7 +3,7 @@
 A native C++20 / Qt 6 desktop app that takes a Veo match URL and downloads the full match recording as an `.mp4`.
 
 ![Screenshot of Veo Downloader](docs/screenshot.png)
-<!-- TODO: add docs/screenshot.png -->
+<sub>Screenshot: Linux build, idle state.</sub>
 
 > I built this app twice to compare the two languages: this C++/Qt version first, then [**veo-downloader-csharp**](https://github.com/amcnutt1996/veo-downloader-csharp) in C#/.NET (Jan – Feb 2026).
 
