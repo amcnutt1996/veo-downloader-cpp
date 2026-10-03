@@ -1,0 +1,13 @@
+# CMake / build output
+build/
+cmake-build-*/
+out/
+vcpkg_installed/
+CMakeUserPresets.json
+
+# IDEs
+.idea/
+.vscode/
+
+# OS
+.DS_Store
